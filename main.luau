@@ -4,7 +4,7 @@ local cloneref = cloneref or function(i: Instance) return i; end;
 local executor = (identifyexecutor and select(2, pcall(identifyexecutor))) and identifyexecutor() or "Your executor";
 local SG = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-notifications/refs/heads/main/main.luau"))();
 
-if not (hookfunction and filtergc or (getgc and debug.getconstants) and run_on_actor) then
+if not (hookfunction and (filtergc or (getgc and debug.getconstants)) and run_on_actor) then
     SG["error"](executor .. " is missing " .. (not hookfunction and "hookfunction " or "") .. (not (filtergc and (getgc and debug.getconstants)) and "filtergc getgc debug.getconstants " or "") .. (not run_on_actor and "run_on_actor" or ""));
     return;
 end;
