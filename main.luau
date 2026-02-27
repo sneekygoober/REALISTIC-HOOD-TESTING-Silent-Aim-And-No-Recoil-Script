@@ -129,14 +129,12 @@ clonefunction(hookfunction(r, newcclosure(function() return true; end)));
 local old; old = clonefunction(hookfunction(tr, newcclosure(function(bullet, ...)
     local c = getTarget();
     if c then
-        task.defer(function()
+        task.spawn(function()
             while bullet ~= nil and bullet.Parent ~= nil do
                 bullet.CFrame = c.CFrame;
                 task.wait();
             end;
         end);
-
-        return old(bullet, ...);
     end;
 
     return old(bullet, ...);
