@@ -2,6 +2,9 @@ if not game:IsLoaded() then game.Loaded:Wait(); end;
 
 local cloneref = cloneref or function(i: Instance) return i; end;
 local executor = (identifyexecutor and select(2, pcall(identifyexecutor))) and identifyexecutor() or "Your executor";
+local _ = cloneref(game:GetService("CoreGui"));
+local hui = _:FindFirstChild("RobloxGui") or _;
+if gethui then local s, r = pcall(gethui); if s then hui = cloneref(r); end; end;
 local SG = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-notifications/refs/heads/main/main.luau"))();
 
 if not (hookfunction and (filtergc or (getgc and debug.getconstants)) and run_on_actor) then
@@ -14,13 +17,13 @@ local Players: Players = cloneref(game:GetService("Players"));
 local plr = Players.LocalPlayer;
 
 local acs = workspace:FindFirstChild("ACS_WorkSpace");
-if not acs then
+if not acs and getgenv().wallcheck then
     SG["error"]("Script needs updating");
     return;
 end;
 
-local client, server = acs:FindFirstChild("Client"), acs:FindFirstChild("Server");
-if not (client and server) then
+local client, server = acs and acs:FindFirstChild("Client"), acs and acs:FindFirstChild("Server");
+if not (client and server) and getgenv().wallcheck then
     SG["error"]("Script needs updating");
     return;
 end;
@@ -42,9 +45,19 @@ if not a then
     return;
 end;
 
+local wc = Instance.new("BoolValue", hui);
+wc.Name = "";
+wc.Value = getgenv().wallcheck;
+wc:GetPropertyChangedSignal("Value"):Connect(function()
+    wc.Value = getgenv().wallcheck;
+end);
+
 local max = 100;
 local payload = [[
 local cloneref = cloneref or function(i: Instance) return i; end;
+local _ = cloneref(game:GetService("CoreGui"));
+local hui = _:FindFirstChild("RobloxGui") or _;
+if gethui then local s, r = pcall(gethui); if s then hui = cloneref(r); end; end;
 local clonefunction = clonefunction or function(f: (...any) -> (...any)) return f; end;
 local newcclosure = newcclosure or clonefunction;
 local SG = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-notifications/refs/heads/main/main.luau"))();
@@ -60,11 +73,13 @@ if not UIS.TouchEnabled and UIS.MouseEnabled and UIS.KeyboardEnabled then
     mouse = plr:GetMouse();
 end;
 
+local wallcheck = hui:FindFirstChildOfClass("BoolValue") and hui:FindFirstChildOfClass("BoolValue").Value;
+
 local filter = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-filtergc/refs/heads/main/main.luau"))();
 
 local isVisible = function(part: BasePart): (boolean, Instance?)
     local char = plr.Character;
-    if not (char and part) then return false, nil; end;
+    if not (char and part and wallcheck) then return false, nil; end;
 
     local rp = RaycastParams.new();
     rp.FilterType = Enum.RaycastFilterType.Exclude;
@@ -99,26 +114,30 @@ local getTarget = function(Muzzle: BasePart): BasePart
         local pos, onScreen = cam:WorldToViewportPoint(tPart.Position);
         if not onScreen then continue; end;
 
-        local v, nTPart = isVisible(tPart);
-        if not v then 
-            v, nTPart = isVisible(char.PrimaryPart or char:FindFirstChild("HumanoidRootPart"));
-            if not v then continue; end;
+        if wallcheck then
+            local v, nTPart = isVisible(tPart);
+            if not v then 
+                v, nTPart = isVisible(char.PrimaryPart or char:FindFirstChild("HumanoidRootPart"));
+                if not v then continue; end;
+            end;
+
+            if nTPart then tPart = nTPart; end;
         end;
 
-        if nTPart then tPart = nTPart; end;
-
-        local mdistance = mouse and (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude or Vector2.new(pos.X, pos.Y).Magnitude;
-        if mdistance < cDistance then
+        local distance = mouse and (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude or Vector2.new(pos.X, pos.Y).Magnitude;
+        if distance < cDistance then
             cPart = tPart;
-            cDistance = mdistance;
+            cDistance = distance;
         end;
     end;
 
     return cPart;
 end;
 
-local tr = filter(nil, false, "getfenv", "print", "wow you must like hooking getfenv", "debug", "setmemorycategory", "ACS_Framework/CharacterAdded/CurrentThread/CastRay");
-local r = filter(nil, false, "camRecoilUp", "camRecoilTilt", "camRecoilLeft", "camRecoilRight", "IPHONE", "warn", "recoil hack 1");
+local s = get_current_actor and (select(1, pcall(get_current_actor)) and get_current_actor():FindFirstChildOfClass("Actor") or nil) or nil;
+
+local tr = filter(s, false, "getfenv", "print", "wow you must like hooking getfenv", "debug", "setmemorycategory", "ACS_Framework/CharacterAdded/CurrentThread/CastRay");
+local r = filter(s, false, "camRecoilUp", "camRecoilTilt", "camRecoilLeft", "camRecoilRight", "IPHONE", "warn", "recoil hack 1");
 if not (tr and r) then
     SG["error"]("Could not find functions");
     return;
@@ -126,11 +145,11 @@ end;
 
 clonefunction(hookfunction(r, newcclosure(function() return true; end)));
 
-local old; old = clonefunction(hookfunction(tr, newcclosure(function(bullet, ...)
+local old; old = clonefunction(hookfunction(tr, function(bullet, ...)
     local c = getTarget();
     if c then
-        task.spawn(function()
-            while bullet ~= nil and bullet.Parent ~= nil do
+        task.defer(function()
+            while c and bullet and c.Parent and bullet.Parent do
                 bullet.CFrame = c.CFrame;
                 task.wait();
             end;
@@ -138,7 +157,7 @@ local old; old = clonefunction(hookfunction(tr, newcclosure(function(bullet, ...
     end;
 
     return old(bullet, ...);
-end)));
+end));
 
 if restorefunction and isfunctionhooked then
     plr.CharacterRemoving:Once(function()
