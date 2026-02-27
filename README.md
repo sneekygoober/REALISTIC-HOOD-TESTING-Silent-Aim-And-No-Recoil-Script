@@ -1,2 +1,3 @@
 # REALISTIC-HOOD-TESTING-Silent-Aim-And-No-Recoil-Script
-This is a basic silent aim with no recoil and no UI for https://www.roblox.com/games/12673840215/REALISTIC-HOOD-TESTING.  Please note that your executor must at least support hookfunction, run_on_actor, and filtergc or getgc and debug.getconstants.
+This script is open-source and free. Anyone can modify/use this script without restrictions. 
+You can also view this script over at [scriptblox.com](https://scriptblox.com/script/REALISTIC-HOOD-TESTING-Silent-Aim-And-No-Recoil-Keyless-123479) or [haxhell.com](https://haxhell.com/scripts/realistic-hood-testing-realistic-hood-testing-silent-aim-and-no-recoil-keyless) or [rscripts.net](https://rscripts.net/script/realistic-hood-testing-silent-aim-and-no-recoil-keyless-evXX).
