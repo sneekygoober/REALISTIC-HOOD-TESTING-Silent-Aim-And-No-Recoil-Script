@@ -77,14 +77,15 @@ local wallcheck = hui:FindFirstChildOfClass("BoolValue") and hui:FindFirstChildO
 
 local filter = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-filtergc/refs/heads/main/main.luau"))();
 
+local rp = RaycastParams.new();
+rp.FilterType = Enum.RaycastFilterType.Exclude;
+rp.IgnoreWater = true;
+
 local isVisible = function(part: BasePart): (boolean, Instance?)
     local char = plr.Character;
     if not (char and part and wallcheck) then return false, nil; end;
 
-    local rp = RaycastParams.new();
-    rp.FilterType = Enum.RaycastFilterType.Exclude;
     rp.FilterDescendantsInstances = {char, workspace.ACS_WorkSpace.Client, workspace.ACS_WorkSpace.Server};
-    rp.IgnoreWater = true;
 
     local origin = cam.CFrame.Position;
 
