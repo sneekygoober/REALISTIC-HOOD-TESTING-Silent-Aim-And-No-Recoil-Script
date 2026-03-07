@@ -68,11 +68,6 @@ local UIS: UserInputService = cloneref(game:GetService("UserInputService"));
 local plr = Players.LocalPlayer;
 local cam = workspace.CurrentCamera;
 
-local mouse: Mouse?;
-if not UIS.TouchEnabled and UIS.MouseEnabled and UIS.KeyboardEnabled then
-    mouse = plr:GetMouse();
-end;
-
 local wallcheck = hui:FindFirstChildOfClass("BoolValue") and hui:FindFirstChildOfClass("BoolValue").Value;
 
 local filter = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-filtergc/refs/heads/main/main.luau"))();
@@ -125,7 +120,7 @@ local getTarget = function(Muzzle: BasePart): BasePart
             if nTPart then tPart = nTPart; end;
         end;
 
-        local distance = mouse and (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude or Vector2.new(pos.X, pos.Y).Magnitude;
+        local distance = (Vector2.new(pos.X, pos.Y) - UIS:GetMouseLocation()).Magnitude;
         if distance < cDistance then
             cPart = tPart;
             cDistance = distance;
