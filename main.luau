@@ -60,7 +60,7 @@ local hui = _:FindFirstChild("RobloxGui") or _;
 if gethui then local s, r = pcall(gethui); if s then hui = cloneref(r); end; end;
 local clonefunction = clonefunction or function(f: (...any) -> (...any)) return f; end;
 local newcclosure = newcclosure or clonefunction;
-local SG = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-notifications/refs/heads/main/main.luau"))();
+local SG = loadstring(game:HttpGet("https://raw.githubusercontent.com/sneekygoober/sneeky-s-notifications/refs/heads/main/unrestricted_main.luau"))();
 
 local Players: Players = cloneref(game:GetService("Players"));
 local UIS: UserInputService = cloneref(game:GetService("UserInputService"));
