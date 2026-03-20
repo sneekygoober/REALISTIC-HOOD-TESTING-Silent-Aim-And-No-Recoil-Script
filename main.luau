@@ -28,26 +28,9 @@ if not (client and server) and getgenv().wallcheck then
     return;
 end;
 
-local a: Actor?;
-if get_actors then
-    for _, v in next, get_actors() do
-        if v.Parent == plr.PlayerScripts then
-            a = v;
-            break;
-        end;
-    end;
-else
-    a = plr.PlayerScripts:FindFirstChildOfClass("Actor");
-end;
-
-if not a then
-    SG["error"]("Couldn't find active actor!");
-    return;
-end;
-
 local wc = Instance.new("BoolValue", hui);
 wc.Name = "";
-wc.Value = getgenv().wallcheck;
+wc.Value = getgenv().wallcheck or false;
 wc:GetPropertyChangedSignal("Value"):Connect(function()
     wc.Value = getgenv().wallcheck;
 end);
@@ -95,7 +78,7 @@ local isVisible = function(part: BasePart): (boolean, Instance?)
     return false, result.Instance;
 end;
 
-local getTarget = function(Muzzle: BasePart): BasePart
+local getTarget = function(): BasePart
     local cPart, cDistance = nil, math.huge;
 
     for _, player: Player in next, Players:GetPlayers() do
@@ -130,40 +113,70 @@ local getTarget = function(Muzzle: BasePart): BasePart
     return cPart;
 end;
 
-local s = get_current_actor and (select(1, pcall(get_current_actor)) and get_current_actor():FindFirstChildOfClass("Actor") or nil) or nil;
-
-local tr = filter(s, false, "getfenv", "print", "wow you must like hooking getfenv", "debug", "setmemorycategory", "ACS_Framework/CharacterAdded/CurrentThread/CastRay");
-local r = filter(s, false, "camRecoilUp", "camRecoilTilt", "camRecoilLeft", "camRecoilRight", "IPHONE", "warn", "recoil hack 1");
-if not (tr and r) then
-    SG["error"]("Could not find functions");
-    return;
-end;
-
-clonefunction(hookfunction(r, newcclosure(function() return true; end)));
-
-local old; old = clonefunction(hookfunction(tr, function(bullet, ...)
-    local c = getTarget();
-    if c then
-        task.defer(function()
-            while c and bullet and c.Parent and bullet.Parent do
-                bullet.CFrame = c.CFrame;
-                task.wait();
-            end;
-        end);
-    end;
-
-    return old(bullet, ...);
-end));
-
-if restorefunction and isfunctionhooked then
-    plr.CharacterRemoving:Once(function()
-        if tr and isfunctionhooked(tr) then restorefunction(tr); end;
-        if r and isfunctionhooked(r) then restorefunction(r); end;
-    end);
-end;
-]];
+local s = get_current_actor and (pcall(get_current_actor) and get_current_actor():FindFirstChildOfClass("LocalScript") or nil) or nil;
+local tr, r;
 
 local inject = function()
+    tr = filter(s, false, "getfenv", "print", "wow you must like hooking getfenv", "debug", "setmemorycategory", "ACS_Framework/CharacterAdded/CurrentThread/CastRay");
+    r = filter(s, false, "camRecoilUp", "camRecoilTilt", "camRecoilLeft", "camRecoilRight", "IPHONE", "warn", "recoil hack 1");
+    if not (tr and r) then
+        SG["error"]("Could not find functions");
+        return;
+    end;
+
+    print(debug.info(tr, "slnaf"));
+    print(debug.info(r, "slnaf"));
+
+    clonefunction(hookfunction(r, newcclosure(function() return true; end)));
+
+    local old; old = clonefunction(hookfunction(tr, function(bullet, ...)
+        local c = getTarget();
+        if c then
+            task.defer(function()
+                while c and bullet and c.Parent and bullet.Parent do
+                    bullet.CFrame = c.CFrame;
+                    task.wait();
+                end;
+            end);
+        end;
+
+        return old(bullet, ...);
+    end));
+end;
+
+task.delay(1, inject);
+
+plr.CharacterAdded:Connect(function()
+    if restorefunction and isfunctionhooked then
+        if tr and isfunctionhooked(tr) then 
+            restorefunction(tr);
+        end;
+        if r and isfunctionhooked(r) then 
+            restorefunction(r);
+        end;
+    end;
+    task.delay(1, inject);
+end);
+]];
+
+task.delay(1.1, function()
+    local a: Actor;
+    if get_actors then
+        for _, v in next, get_actors() do
+            if v.Parent == plr.PlayerScripts then
+                a = v;
+                break;
+            end;
+        end;
+    else
+        a = plr.PlayerScripts:FindFirstChildOfClass("Actor");
+    end;
+
+    if not a then
+        SG["error"]("Couldn't find active actor!");
+        return;
+    end;
+
     local retries = 0;
     local injected = false;
 
@@ -184,10 +197,6 @@ local inject = function()
         SG["error"]("Failed to inject payload to " .. a:GetFullName());
         return;
     end;
-end;
-
-inject();
-
-plr.CharacterAdded:Connect(inject);
+end);
 
 SG["success"]("Silent aim successfully executed!\nIf you have any issues press F9 or type /console in chat and then send me a screenshot of the console.");
